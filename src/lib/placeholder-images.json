@@ -1,0 +1,46 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A futuristic image representing healthcare technology.",
+      "imageUrl": "https://images.unsplash.com/photo-1526628953301-3e589a6a8b74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxoZWFsdGhjYXJlJTIwdGVjaG5vbG9neXxlbnwwfHx8fDE3NzEwNTY1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "healthcare technology"
+    },
+    {
+      "id": "doctor-avatar-1",
+      "description": "Avatar for Dr. Amelia Vance.",
+      "imageUrl": "https://images.unsplash.com/photo-1683348858689-f4e10994804d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxkb2N0b3IlMjB3b21hbnxlbnwwfHx8fDE3NzA5NjM1NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "doctor woman"
+    },
+    {
+      "id": "patient-avatar-1",
+      "description": "Avatar for a patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1558632743-d936e5acfe28?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwZXJzb24lMjBtYW58ZW58MHx8fHwxNzcxMDU2NTg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person man"
+    },
+    {
+      "id": "patient-avatar-2",
+      "description": "Avatar for a patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1518336106683-3e161e20a9d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjB3b21hbnxlbnwwfHx8fDE3NzEwNTY1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person woman"
+    },
+    {
+      "id": "patient-avatar-3",
+      "description": "Avatar for a patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1683087446570-2938bb72469a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBjaGlsZHxlbnwwfHx8fDE3NzEwNTY1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person child"
+    },
+    {
+      "id": "patient-avatar-4",
+      "description": "Avatar for a patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1590086782792-42dd2350140d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjBtYW58ZW58MHx8fHwxNzcxMDU2NTg4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person man"
+    },
+    {
+      "id": "patient-avatar-5",
+      "description": "Avatar for a patient.",
+      "imageUrl": "https://images.unsplash.com/photo-1522620290567-b7dc555f944c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjB3b21hbnxlbnwwfHx8fDE3NzEwNTY1ODh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person woman"
+    }
+  ]
+}

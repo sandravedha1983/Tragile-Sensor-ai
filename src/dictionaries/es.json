@@ -1,0 +1,28 @@
+{
+  "page": {
+    "home": {
+      "title": "Triaje Inteligente para una Sanidad más Inteligente y Rápida",
+      "description": "TriageSenseAI proporciona una plataforma explicable, en tiempo real y consciente de los recursos para revolucionar las decisiones de atención al paciente.",
+      "launch_dashboard": "Lanzar Panel",
+      "emergency_access": "Acceso de Emergencia",
+      "powered_by": "Impulsado por IA Explicable",
+      "features_title": "El Futuro del Triaje de Pacientes",
+      "features_description": "Nuestra plataforma se basa en tres pilares para garantizar una prestación sanitaria eficiente, transparente y eficaz.",
+      "feature_1_title": "Triaje Impulsado por IA",
+      "feature_1_description": "Aproveche el aprendizaje automático para clasificar con precisión el riesgo del paciente en tiempo real.",
+      "feature_2_title": "Información Explicable",
+      "feature_2_description": "Comprenda el \"porqué\" de cada decisión de la IA con explicaciones claras y prácticas.",
+      "feature_3_title": "Consciente de los Recursos",
+      "feature_3_description": "Optimice el flujo de pacientes considerando la disponibilidad de recursos hospitalarios en tiempo real.",
+      "footer_text": "© {year} TriageSenseAI. Todos los derechos reserved."
+    }
+  },
+  "navigation": {
+    "login": "Iniciar Sesión"
+  },
+  "components": {
+    "language_switcher": {
+      "change_language": "Cambiar idioma"
+    }
+  }
+}

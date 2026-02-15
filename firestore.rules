@@ -1,0 +1,233 @@
+/**
+ * TriageSense AI - Firestore Security Rules (Prototyping Mode)
+ *
+ * Core Philosophy:
+ * This ruleset implements a sophisticated Role-Based Access Control (RBAC) model tailored for a healthcare environment.
+ * It strictly defines permissions for distinct roles (Admin, Doctor, TriageStaff, Patient, and anonymous Guests)
+ * to ensure sensitive patient data is protected while allowing necessary operational access. The default security
+ * posture is deny-all, with permissions explicitly granted based on authenticated identity and role.
+ *
+ * Data Structure:
+ * The data model uses a flat, top-level collection structure to promote scalability and simple, performant rules.
+ * Key collections include `/users`, `/patients`, `/doctors`, `/hospitalResources`, and `/modelLogs`.
+ * A set of role-specific collections (e.g., `/roles_admin/{userId}`) are used to enable fast, efficient,
+ * non-hierarchical role verification across the entire database.
+ *
+ * Key Security Decisions:
+ * 1.  Role Verification via `exists()`: Instead of reading a user's profile to check their role (a slow and costly `get` operation),
+ *     we use fast `exists()` checks on dedicated role collections (e.g., `exists(/.../roles_admin/$(request.auth.uid))`).
+ *     This makes role-based authorization highly performant.
+ * 2.  Authorization Independence: Critical authorization data is denormalized directly onto the documents being secured.
+ *     For instance, a `/patients` document contains `patientUserId` and `assignedDoctorId`, allowing rules to grant access
+ *     directly without needing to read other documents.
+ * 3.  Disallowed User Listing: To protect user privacy, listing the entire `/users` collection is forbidden for all clients.
+ * 4.  Singleton for Public Data: The `/hospitalResources/current` document is a singleton that is publicly readable by anyone
+ *     (including anonymous guests) but writable only by Admins, providing a secure way to share system-wide state.
+ * 5.  Prototyping Flexibility: Data shape and type validation are intentionally omitted to allow for rapid frontend and backend
+ *     development. Rules focus strictly on *who* can access *what*, not the exact schema of the data being written. However,
+ *     fields critical for authorization (like owner IDs) are validated for integrity on creation and immutability on update.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions for Readability and Maintainability
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the requesting user's UID matches the provided resource owner's UID.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * Checks if the document being operated on already exists.
+     * Crucial for protecting against writes on non-existent paths.
+     */
+    function docExists() {
+      return resource != null;
+    }
+
+    /**
+     * Role Check: Verifies if the authenticated user has the 'Admin' role
+     * by checking for a document in the roles_admin collection.
+     */
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * Role Check: Verifies if the authenticated user has the 'Doctor' role.
+     */
+    function isDoctor() {
+      return exists(/databases/$(database)/documents/roles_doctors/$(request.auth.uid));
+    }
+
+    /**
+     * Role Check: Verifies if the authenticated user has the 'TriageStaff' role.
+     */
+    function isTriageStaff() {
+      return exists(/databases/$(database)/documents/roles_triage_staff/$(request.auth.uid));
+    }
+
+    /**
+     * Patient Data Access: Checks if the user is the patient who owns the record.
+     */
+    function isPatientOwner(patientRecord) {
+      return request.auth.uid == patientRecord.patientUserId;
+    }
+
+    /**
+     * Patient Data Access: Checks if the user is the doctor assigned to the patient record.
+     */
+    function isAssignedDoctor(patientRecord) {
+      return request.auth.uid == patientRecord.assignedDoctorId;
+    }
+
+    /**
+     * Data Integrity: Validates that the user ID inside a newly created document
+     * matches the document's ID (the user's auth UID).
+     */
+    function hasCorrectUserIdOnCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+    
+    /**
+     * Data Integrity: Ensures the user ID field on a document is immutable.
+     */
+    function userIdIsImmutable() {
+      return request.resource.data.id == resource.data.id;
+    }
+    
+    /**
+     * Data Integrity: Ensures the patient owner ID field is immutable.
+     */
+    function patientOwnerIsImmutable() {
+      return request.resource.data.patientUserId == resource.data.patientUserId;
+    }
+
+
+    /**
+     * @description Manages user profile data. Each user can manage their own document. Admins have full control.
+     * @path /users/{userId}
+     * @allow (get) An authenticated user reads their own profile: `request.auth.uid == userId`.
+     * @deny (list) Any user, including Admins, attempting to list all users from the client.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if false;
+      allow create: if isOwner(userId) && hasCorrectUserIdOnCreate(userId);
+      allow update: if (isOwner(userId) || isAdmin()) && docExists() && userIdIsImmutable();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Contains all patient triage records. Access is strictly controlled based on role and relationship.
+     * @path /patients/{patientId}
+     * @allow (get) A doctor reads a patient record they are assigned to: `request.auth.uid == resource.data.assignedDoctorId`.
+     * @deny (get) A patient attempts to read another patient's record.
+     * @principle Enforces fine-grained access to sensitive data based on denormalized ownership and assignment fields.
+     */
+    match /patients/{patientId} {
+      allow get: if isSignedIn() && (isPatientOwner(resource.data) || isAssignedDoctor(resource.data) || isTriageStaff() || isAdmin());
+      allow list: if isSignedIn();
+      allow create: if (
+          (isTriageStaff() || isDoctor() || isAdmin()) ||
+          (isSignedIn() && request.resource.data.patientUserId == request.auth.uid)
+      ) && request.resource.data.patientUserId is string && request.resource.data.patientUserId.size() > 0;
+      allow update: if (isAssignedDoctor(resource.data) || isTriageStaff() || isAdmin()) && docExists() && patientOwnerIsImmutable();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Manages doctor profiles, including specialization and availability. Readable by staff, writable by owner or Admin.
+     * @path /doctors/{doctorId}
+     * @allow (update) A doctor updates their own availability status: `request.auth.uid == resource.data.userId`.
+     * @deny (update) A doctor attempts to update another doctor's profile.
+     * @principle Enforces document ownership for writes while allowing broader read access for operational visibility.
+     */
+    match /doctors/{doctorId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if (isOwner(doctorId) || (docExists() && isOwner(resource.data.userId)) || isAdmin()) && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description A singleton document storing real-time hospital resource availability. Publicly readable, Admin-only writes.
+     * @path /hospitalResources/current
+     * @allow (get) An anonymous, unauthenticated user reads bed availability.
+     * @deny (update) A non-Admin user attempts to change the number of available beds.
+     * @principle Provides secure public read access for a specific, well-known document while restricting modifications.
+     */
+    match /hospitalResources/current {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+    
+    /**
+     * @description Stores logs from the AI model for fairness and performance monitoring. Restricted to Admins.
+     * @path /modelLogs/{logId}
+     * @allow (get) An Admin views a specific model performance log.
+     * @deny (get) A Doctor or any other non-admin role attempts to read model logs.
+     * @principle Segregates sensitive operational and monitoring data, accessible only by privileged roles.
+     */
+    match /modelLogs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin() && docExists();
+      allow delete: if isAdmin() && docExists();
+    }
+
+    /**
+     * @description Collections that grant roles via document existence. Writable by Admins, or by users for their own non-admin roles.
+     * @path /roles_admin/{userId}, /roles_doctors/{userId}, etc.
+     * @allow (create) An Admin grants a role. A user self-assigns a non-admin role on signup.
+     * @deny (create) A non-Admin user attempts to grant another user a role, or a user tries to become an Admin.
+     * @principle Centralizes role management under Admins while allowing self-service for non-privileged roles.
+     */
+    match /roles_admin/{userId} {
+      allow read, write: if isAdmin();
+    }
+    match /roles_doctors/{userId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isAdmin() || isOwner(userId);
+      allow update: if false;
+    }
+    match /roles_triage_staff/{userId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isAdmin() || isOwner(userId);
+      allow update: if false;
+    }
+    match /roles_patients/{userId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isAdmin() || isOwner(userId);
+      allow update: if false;
+    }
+    
+    /**
+     * @description Manages anonymous guest patient sessions. Users can create and delete their own session document.
+     * @path /guest_patients/{userId}
+     * @allow (create) An anonymous user starts an emergency session, creating their own record.
+     * @deny (list) Any user attempting to list all active guest sessions.
+     * @principle Enables self-service for anonymous users while isolating their session data from other users.
+     */
+    match /guest_patients/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if false;
+      allow delete: if isOwner(userId) && docExists();
+    }
+  }
+}

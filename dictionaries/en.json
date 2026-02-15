@@ -1,0 +1,28 @@
+{
+  "page": {
+    "home": {
+      "title": "Intelligent Triage for Smarter, Faster Healthcare",
+      "description": "TriageSenseAI provides an explainable, real-time, and resource-aware platform to revolutionize patient care decisions.",
+      "launch_dashboard": "Launch Dashboard",
+      "emergency_access": "Emergency Access",
+      "powered_by": "Powered by Explainable AI",
+      "features_title": "The Future of Patient Triage",
+      "features_description": "Our platform is built on three core pillars to ensure efficient, transparent, and effective healthcare delivery.",
+      "feature_1_title": "AI-Powered Triage",
+      "feature_1_description": "Leverage machine learning to accurately classify patient risk in real-time.",
+      "feature_2_title": "Explainable Insights",
+      "feature_2_description": "Understand the \"why\" behind every AI decision with clear, actionable explanations.",
+      "feature_3_title": "Resource-Aware",
+      "feature_3_description": "Optimize patient flow by considering real-time hospital resource availability.",
+      "footer_text": "© {year} TriageSenseAI. All rights reserved."
+    }
+  },
+  "navigation": {
+    "login": "Login"
+  },
+  "components": {
+    "language_switcher": {
+      "change_language": "Change language"
+    }
+  }
+}

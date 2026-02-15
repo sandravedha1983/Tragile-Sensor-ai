@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-bar {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 222 47% 4%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 6%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 226 38% 57%;
+    /* #6779B9 */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 222 47% 8%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 222 47% 8%;
+    --muted-foreground: 214 32% 60%;
+    --accent: 33 100% 53%;
+    /* #FF900E */
+    --accent-foreground: 222 47% 4%;
+    --destructive: 351 91% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 222 47% 10%;
+    --input: 222 47% 10%;
+    --ring: 226 38% 57%;
+    --radius: 0.85rem;
+
+    --chart-1: 226 38% 57%;
+    --chart-2: 33 100% 53%;
+    --chart-3: 18 100% 50%;
+    --chart-4: 50 100% 58%;
+    --chart-5: 327 34% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    background: linear-gradient(180deg,
+        #6779B9 0%,
+        #C47DA0 25%,
+        #D58FAA 45%,
+        #FF900E 75%,
+        #FCDD2D 100%);
+    background-attachment: fixed;
+    @apply text-foreground min-h-screen font-body;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}

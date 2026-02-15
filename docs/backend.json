@@ -1,0 +1,561 @@
+{
+  "entities": {
+    "Patient": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Patient",
+      "type": "object",
+      "description": "Represents a patient undergoing the triage process, storing their intake information, vital signs, symptoms, and the AI-generated triage results and recommendations.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Patient entity."
+        },
+        "age": {
+          "type": "number",
+          "description": "The patient's age in years."
+        },
+        "gender": {
+          "type": "string",
+          "description": "The patient's gender.",
+          "format": "string"
+        },
+        "symptoms": {
+          "type": "array",
+          "description": "A list of symptoms reported by the patient (multi-select options).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "symptomFreeText": {
+          "type": "string",
+          "description": "Additional symptoms or details provided by the patient in free-text format."
+        },
+        "bloodPressureSystolic": {
+          "type": "number",
+          "description": "The patient's systolic blood pressure reading."
+        },
+        "bloodPressureDiastolic": {
+          "type": "number",
+          "description": "The patient's diastolic blood pressure reading."
+        },
+        "heartRate": {
+          "type": "number",
+          "description": "The patient's heart rate in beats per minute."
+        },
+        "temperature": {
+          "type": "number",
+          "description": "The patient's body temperature in degrees (e.g., Celsius or Fahrenheit)."
+        },
+        "preExistingConditions": {
+          "type": "array",
+          "description": "A list of pre-existing medical conditions reported by the patient.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ehrEmrPdfUrl": {
+          "type": "string",
+          "description": "URL to an uploaded Electronic Health Record (EHR) or Electronic Medical Record (EMR) PDF.",
+          "format": "uri"
+        },
+        "voiceSymptomInputText": {
+          "type": "string",
+          "description": "Text transcription of voice-based symptom input."
+        },
+        "riskProbability": {
+          "type": "number",
+          "description": "The probability of high risk as determined by the ML model (0-1)."
+        },
+        "riskLevel": {
+          "type": "string",
+          "description": "The classified risk level for the patient (e.g., 'Low', 'Medium', 'Critical')."
+        },
+        "urgencyIndex": {
+          "type": "number",
+          "description": "A dynamic index reflecting the patient's urgency for attention (0-100)."
+        },
+        "departmentFitScores": {
+          "type": "string",
+          "description": "JSON string representing an object of scores indicating the suitability of different hospital departments for the patient's condition (e.g., {\"Cardiology\": 0.85, \"Emergency\": 0.6})."
+        },
+        "recommendedDepartment": {
+          "type": "string",
+          "description": "The primary department recommended by the AI and resource optimization engine."
+        },
+        "confidence": {
+          "type": "number",
+          "description": "The confidence level of the AI's prediction."
+        },
+        "topFactors": {
+          "type": "array",
+          "description": "A list of key factors or features that most influenced the AI's decision.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "naturalExplanation": {
+          "type": "string",
+          "description": "A natural language explanation of the AI's decision."
+        },
+        "modelVersion": {
+          "type": "string",
+          "description": "The version of the machine learning model used for the prediction."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the patient in the triage process (e.g., 'InQueue', 'Triaged', 'Assigned', 'Completed', 'Rerouted')."
+        },
+        "reroutingReason": {
+          "type": "string",
+          "description": "If the patient was rerouted, the reason for rerouting (e.g., 'Capacity constraints in recommended department')."
+        },
+        "complianceStatus": {
+          "type": "string",
+          "description": "The compliance status of this patient's data processing according to regulatory agents (e.g., 'Compliant', 'NonCompliant', 'N/A')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the patient record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the patient record was last updated.",
+          "format": "date-time"
+        },
+        "assignedDoctorId": {
+          "type": "string",
+          "description": "Reference to the Doctor entity currently assigned to this patient. (Relationship: Doctor 1:N Patient)"
+        },
+        "patientUserId": {
+          "type": "string",
+          "description": "Reference to the User entity if the patient has a registered account. Optional for guest patients. (Relationship: User 1:N Patient)"
+        }
+      },
+      "required": [
+        "id",
+        "age",
+        "gender",
+        "symptoms",
+        "bloodPressureSystolic",
+        "bloodPressureDiastolic",
+        "heartRate",
+        "temperature",
+        "preExistingConditions",
+        "riskProbability",
+        "riskLevel",
+        "urgencyIndex",
+        "recommendedDepartment",
+        "confidence",
+        "naturalExplanation",
+        "modelVersion",
+        "status",
+        "createdAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the TriageSense AI platform, including administrative staff, doctors, triage staff, and registered patients. This entity stores basic user information and their assigned role.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, used for login.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user within the system (e.g., 'Admin', 'Doctor', 'TriageStaff', 'Patient', 'GuestPatient')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name",
+        "role",
+        "createdAt"
+      ]
+    },
+    "Doctor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a medical doctor on the platform, linking to their user account and managing their specialization, availability, and patient load.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Doctor entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User entity associated with this doctor's account. (Relationship: User 1:1 Doctor)"
+        },
+        "specialization": {
+          "type": "string",
+          "description": "The medical specialization of the doctor (e.g., 'Cardiology', 'Emergency Medicine')."
+        },
+        "availabilityStatus": {
+          "type": "string",
+          "description": "The current availability status of the doctor (e.g., 'AvailableAtHospital', 'AvailableForHomeVisit', 'NotAvailable', 'OnBreak')."
+        },
+        "locationType": {
+          "type": "string",
+          "description": "Indicates where the doctor is available (e.g., 'Hospital', 'HomeVisit')."
+        },
+        "maxPatientsCapacity": {
+          "type": "number",
+          "description": "The maximum number of patients the doctor can handle concurrently."
+        },
+        "currentPatientsLoad": {
+          "type": "number",
+          "description": "The current number of patients assigned to the doctor."
+        },
+        "assignedPatientIds": {
+          "type": "array",
+          "description": "References to Patient entities currently assigned to this doctor. (Relationship: Doctor N:N Patient)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the doctor record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the doctor record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "specialization",
+        "availabilityStatus",
+        "locationType",
+        "maxPatientsCapacity",
+        "currentPatientsLoad",
+        "createdAt"
+      ]
+    },
+    "HospitalResource": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HospitalResource",
+      "type": "object",
+      "description": "Stores real-time information about available hospital resources, used for department rerouting and dashboard display.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the HospitalResource entity (e.g., 'main_hospital_resources' for a singleton)."
+        },
+        "cardiologyBedsAvailable": {
+          "type": "number",
+          "description": "Number of available beds in the cardiology department."
+        },
+        "emergencySlotsAvailable": {
+          "type": "number",
+          "description": "Number of available slots or capacity in the emergency department."
+        },
+        "neurologistsOnDuty": {
+          "type": "number",
+          "description": "Number of neurologists currently on duty and available."
+        },
+        "generalPhysiciansAvailable": {
+          "type": "number",
+          "description": "Number of general physicians currently available."
+        },
+        "icuBedsAvailable": {
+          "type": "number",
+          "description": "Number of available beds in the Intensive Care Unit (ICU)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the resource information was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "cardiologyBedsAvailable",
+        "emergencySlotsAvailable",
+        "neurologistsOnDuty",
+        "generalPhysiciansAvailable",
+        "icuBedsAvailable",
+        "updatedAt"
+      ]
+    },
+    "ModelLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ModelLog",
+      "type": "object",
+      "description": "Captures periodic or batch logs related to AI model performance, fairness, and bias monitoring.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ModelLog entry."
+        },
+        "modelVersion": {
+          "type": "string",
+          "description": "The version of the machine learning model that generated the logged metrics."
+        },
+        "loggedAt": {
+          "type": "string",
+          "description": "Timestamp when this log entry was recorded.",
+          "format": "date-time"
+        },
+        "periodStart": {
+          "type": "string",
+          "description": "The start timestamp of the period for which these metrics were aggregated (if a batch log).",
+          "format": "date-time"
+        },
+        "periodEnd": {
+          "type": "string",
+          "description": "The end timestamp of the period for which these metrics were aggregated (if a batch log).",
+          "format": "date-time"
+        },
+        "deploymentCountry": {
+          "type": "string",
+          "description": "The country where the model was deployed and predictions were made (e.g., 'INDIA', 'USA', 'EU')."
+        },
+        "fairnessWarning": {
+          "type": "boolean",
+          "description": "Indicates if a potential bias or fairness deviation was detected."
+        },
+        "fairnessWarningDetails": {
+          "type": "string",
+          "description": "Details about the detected fairness warning, if any."
+        },
+        "riskDistributionLowPercentage": {
+          "type": "number",
+          "description": "Percentage of predictions classified as 'Low' risk during the logged period."
+        },
+        "riskDistributionMediumPercentage": {
+          "type": "number",
+          "description": "Percentage of predictions classified as 'Medium' risk during the logged period."
+        },
+        "riskDistributionCriticalPercentage": {
+          "type": "number",
+          "description": "Percentage of predictions classified as 'Critical' risk during the logged period."
+        },
+        "totalPredictionsCount": {
+          "type": "number",
+          "description": "The total number of predictions analyzed in this log entry."
+        },
+        "predictionDistributionByGender": {
+          "type": "string",
+          "description": "JSON string representing an object detailing the aggregate prediction distribution across gender categories (e.g., {\"Male\": {\"low\": 10, \"medium\": 20, \"critical\": 5}})."
+        },
+        "predictionDistributionByAgeGroup": {
+          "type": "string",
+          "description": "JSON string representing an object detailing the aggregate prediction distribution across defined age groups (e.g., {\"0-18\": {\"low\": 5, \"medium\": 3, \"critical\": 1}})."
+        },
+        "falsePositiveRateByGender": {
+          "type": "string",
+          "description": "JSON string representing an object detailing false positive rates for different gender categories (e.g., {\"Male\": 0.05, \"Female\": 0.07})."
+        },
+        "falseNegativeRateByGender": {
+          "type": "string",
+          "description": "JSON string representing an object detailing false negative rates for different gender categories, inferred for fairness monitoring (e.g., {\"Male\": 0.02, \"Female\": 0.03})."
+        }
+      },
+      "required": [
+        "id",
+        "modelVersion",
+        "loggedAt",
+        "deploymentCountry",
+        "fairnessWarning",
+        "riskDistributionLowPercentage",
+        "riskDistributionMediumPercentage",
+        "riskDistributionCriticalPercentage",
+        "totalPredictionsCount"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores profile information for registered users (Admin, Doctor, Triage Staff, Patient). Includes the user's explicit role. Accessible by the user themselves for read/write and by Admin for full management. The 'role' field is used as a data-level indicator for roles.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the registered user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/patients/{patientId}",
+        "definition": {
+          "entityName": "Patient",
+          "schema": {
+            "$ref": "#/backend/entities/Patient"
+          },
+          "description": "Contains comprehensive triage records for all patients, including intake data, vital signs, AI predictions, and recommendations. Includes denormalized 'patientUserId' for direct patient ownership authorization, 'assignedDoctorId' for doctor assignment authorization, and 'urgencyIndex' for client-side routing and potential rule conditions. Adheres to authorization independence by embedding relevant UIDs directly.",
+          "params": [
+            {
+              "name": "patientId",
+              "description": "The unique identifier for a patient's triage record, auto-generated upon submission."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/doctors/{doctorId}",
+        "definition": {
+          "entityName": "Doctor",
+          "schema": {
+            "$ref": "#/backend/entities/Doctor"
+          },
+          "description": "Stores specific information for medical doctors, such as specialization, availability, and patient load. Includes denormalized 'userId' for direct ownership authorization, allowing doctors to manage their own profiles securely. Triage Staff and Admins have read access to view doctor availability.",
+          "params": [
+            {
+              "name": "doctorId",
+              "description": "The unique identifier for a doctor's profile, typically corresponding to their Firebase Authentication UID or a generated ID linked by 'userId'."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/hospitalResources/current",
+        "definition": {
+          "entityName": "HospitalResource",
+          "schema": {
+            "$ref": "#/backend/entities/HospitalResource"
+          },
+          "description": "A singleton document providing real-time availability of hospital resources (beds, staff). Admin users have write access, while all other roles (including guest patients) have read access to inform recommendations and dashboards."
+        }
+      },
+      {
+        "path": "/modelLogs/{logId}",
+        "definition": {
+          "entityName": "ModelLog",
+          "schema": {
+            "$ref": "#/backend/entities/ModelLog"
+          },
+          "description": "Stores logs related to AI model performance, fairness metrics, and bias monitoring. Primarily accessible by Admin users for monitoring and compliance, ensuring segregated access for sensitive ML insights.",
+          "params": [
+            {
+              "name": "logId",
+              "description": "A unique identifier for each model log entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "UserRoleAdmin",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "A collection where the existence of a document at `/roles_admin/{userId}` grants administrative privileges. This enables efficient 'existence checks' in security rules for global admin access, adhering to the DBAC principle and authorization independence. Only Admins can create/delete documents in this collection.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user with 'Admin' role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_doctors/{userId}",
+        "definition": {
+          "entityName": "UserRoleDoctor",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "A collection where the existence of a document at `/roles_doctors/{userId}` grants doctor-specific privileges. Used for efficient 'existence checks' in security rules. Only Admins can create/delete documents in this collection.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user with 'Doctor' role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_triage_staff/{userId}",
+        "definition": {
+          "entityName": "UserRoleTriageStaff",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "A collection where the existence of a document at `/roles_triage_staff/{userId}` grants triage staff privileges. Used for efficient 'existence checks' in security rules. Only Admins can create/delete documents in this collection.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the user with 'Triage Staff' role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_patients/{userId}",
+        "definition": {
+          "entityName": "UserRolePatient",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "A collection where the existence of a document at `/roles_patients/{userId}` identifies a registered patient. Used for efficient 'existence checks' in security rules, particularly for differentiating registered from anonymous patients. Only Admins can create/delete documents in this collection.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the registered user with 'Patient' role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/guest_patients/{userId}",
+        "definition": {
+          "entityName": "UserGuestPatient",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "A collection specifically for tracking anonymous guest patient sessions. The existence of a document at `/guest_patients/{userId}` denotes an active anonymous session, enabling targeted read-only rule enforcement and scheduled session cleanup. Documents are created by the anonymous user on emergency access and managed by Cloud Functions for cleanup.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique Firebase Authentication UID of the anonymous guest user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure prioritizes secure, scalable, and debuggable authorization by strictly adhering to the core design principles and strategy mandates. \n\n**Authorization Independence:**\n1.  **Patient Data (`/patients/{patientId}`):** Each patient document includes `patientUserId` (the UID of the patient who created it, regardless of anonymous or registered status) and `assignedDoctorId` (the UID of the doctor assigned). This denormalization is critical. Security rules can directly evaluate `request.auth.uid == resource.data.patientUserId` or `request.auth.uid == resource.data.assignedDoctorId` without requiring any `get()` operations to other documents (e.g., a parent document or a user's profile). This ensures atomic operations, simplifies rule logic, and prevents authorization bottlenecks.\n2.  **Doctor Profiles (`/doctors/{doctorId}`):** Each doctor document includes `userId` that maps directly to the associated Firebase Authentication UID. This enables doctors to manage their own profiles securely using `request.auth.uid == resource.data.userId` without external lookups.\n3.  **Role-Based Access (`/roles_admin/{userId}`, etc.):** To avoid relying on `get()` to fetch a user's role from their `/users/{userId}` document for cross-collection authorization, dedicated role-specific collections are established (e.g., `/roles_admin/{userId}`). Authorization rules can then use efficient `exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))` checks. This provides a direct, non-hierarchical, and performant method for role-based access control.\n\n**Querying for Authorization Purposes (QAPs - Rules are not Filters):**\n1.  **Patient-Specific Access:** Patients (both registered and anonymous) can securely retrieve their own records using queries like `collection('patients').where('patientUserId', '==', request.auth.uid)`. The security rules will enforce `allow read: if request.auth.uid == resource.data.patientUserId;`. This allows authorized queries directly on the indexed `patientUserId` field, ensuring that unauthorized data is never returned or filtered client-side, thus adhering to QAPs.\n2.  **Doctor-Specific Assigned Patients:** Doctors can query for their assigned patients using `collection('patients').where('assignedDoctorId', '==', request.auth.uid)`. Rules enforce `allow read: if request.auth.uid == resource.data.assignedDoctorId;`. This is similarly robust against QAP violations.\n3.  **Triage Staff and Admin Access:** These roles require broad access to view and list all patient records (`/patients`) and model logs (`/modelLogs`). The design grants them `list` permissions based on their `exists()` role checks. This aligns with QAPs as the system intends for them to see all such data, and no further filtering is applied by the rules.\n4.  **Structural Segregation:** While a single `/patients` collection is used, the explicit denormalization of `patientUserId` and `assignedDoctorId` enables precise, secure access control at the document level based on `request.auth.uid`, effectively segregating access without needing separate physical collections for different `urgencyIndex` levels within the patient data itself. The `guest_patients` collection serves to segregate guest session management for cleanup and specific read-only rule enforcement for anonymous users.\n\n**Overall:** The structure employs clear, descriptive paths and denormalizes critical authorization fields into relevant documents. Role membership is managed via dedicated existence collections, ensuring that security rules are straightforward, atomic-operation-friendly, and highly performant without relying on complex `get()` statements for authorization decisions across document hierarchies."
+  }
+}
+
+    
