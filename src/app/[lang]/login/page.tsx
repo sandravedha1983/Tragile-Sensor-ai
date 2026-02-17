@@ -15,10 +15,11 @@ import { Input } from '@/components/ui/input';
 import { Shield, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInAnonymously, sendPasswordResetEmail, sendEmailVerification, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState, use } from 'react';
 import { Locale } from '@/i18n-config';
+import { mapAuthError } from '@/lib/auth-errors';
 
 import { GoogleTranslator } from '@/components/google-translator';
 
@@ -31,23 +32,68 @@ export default function LoginPage({ params }: { params: Promise<{ lang: Locale }
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGuestLoading, setIsGuestLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.emailVerified) {
+        setShowResend(true);
+        await signOut(auth);
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: 'Please verify your email before logging in.',
+        });
+        return;
+      }
+
       toast({ title: 'Login Successful' });
       router.push(`/${lang}/dashboard`);
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message,
+        description: mapAuthError(error),
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!auth) return;
+    if (!email) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please enter your email address first.',
+      });
+      return;
+    }
+
+    setIsResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: 'Success',
+        description: 'Password reset link has been sent to your email.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: mapAuthError(error),
+      });
+    } finally {
+      setIsResetLoading(false);
     }
   };
 
@@ -62,10 +108,49 @@ export default function LoginPage({ params }: { params: Promise<{ lang: Locale }
       toast({
         variant: 'destructive',
         title: 'Emergency Access Failed',
-        description: error.message,
+        description: mapAuthError(error),
       });
     } finally {
       setIsGuestLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!auth || !email || !password) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please enter your email and password to resend the verification link.',
+      });
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      // We need to sign in briefly to get the user object to send the verification
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      const actionCodeSettings = {
+        url: `${window.location.origin}/${lang}/login`,
+        handleCodeInApp: !!process.env.NEXT_PUBLIC_FIREBASE_HANDLE_CODE_IN_APP,
+      };
+      await sendEmailVerification(userCredential.user, actionCodeSettings);
+      await signOut(auth);
+
+      toast({
+        title: 'Success',
+        description: 'Verification email resent! Please check your inbox.',
+      });
+      setShowResend(false);
+    } catch (error: any) {
+      console.error('Resend Error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: mapAuthError(error),
+      });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -91,15 +176,37 @@ export default function LoginPage({ params }: { params: Promise<{ lang: Locale }
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || !auth}>
+            <Button type="submit" className="w-full" disabled={isLoading || isResetLoading || !auth}>
               {isLoading ? <Loader2 className="animate-spin" /> : 'Sign In'}
             </Button>
+            {showResend && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-primary hover:text-primary/80 text-xs font-semibold"
+                onClick={handleResendVerification}
+                disabled={isResending}
+              >
+                {isResending ? <Loader2 className="w-3 h-3 mr-2 animate-spin" /> : null}
+                Didn&apos;t receive the email? Resend verification
+              </Button>
+            )}
           </form>
-          <div className="text-center text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href={`/${lang}/signup`} className="underline">
-              Sign up
-            </Link>
+          <div className="flex flex-col gap-2 text-center text-sm">
+            <div>
+              Don&apos;t have an account?{' '}
+              <Link href={`/${lang}/signup`} className="underline">
+                Sign up
+              </Link>
+            </div>
+            <button
+              onClick={handleForgotPassword}
+              className="text-muted-foreground underline hover:text-primary transition-colors"
+              disabled={isResetLoading}
+            >
+              {isResetLoading ? 'Sending...' : 'Forgot Password?'}
+            </button>
           </div>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

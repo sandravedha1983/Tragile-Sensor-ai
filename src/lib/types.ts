@@ -54,6 +54,7 @@ export type UserProfile = {
   email: string;
   name: string;
   role: 'Admin' | 'Doctor' | 'TriageStaff' | 'Patient';
+  specialization?: string; // Optional field for doctors
   createdAt: string;
   updatedAt: string;
 }

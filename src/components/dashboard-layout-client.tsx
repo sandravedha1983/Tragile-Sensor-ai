@@ -6,6 +6,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Locale } from '@/i18n-config';
+import { ProfileRecovery } from '@/components/auth/profile-recovery';
 
 export function DashboardLayoutClient({
     children,
@@ -23,12 +24,21 @@ export function DashboardLayoutClient({
 
     useEffect(() => {
         if (isLoading) {
-            return; // Wait until user and profile are loaded
+            console.log("DashboardLayoutClient: Waiting for auth or profile...");
+            return;
         }
+
+        console.log("DashboardLayoutClient: Auth/Profile loaded. User:", user?.uid, "Role:", userProfile?.role);
 
         const currentLang = pathname.split('/')[1] as Locale;
 
         if (!user) {
+            router.replace(`/${currentLang}/login`);
+            return;
+        }
+
+        // Check for email verification
+        if (!user.emailVerified && !user.isAnonymous) {
             router.replace(`/${currentLang}/login`);
             return;
         }
@@ -60,7 +70,9 @@ export function DashboardLayoutClient({
                     return;
             }
         } else if (!user.isAnonymous && !userProfile) {
-            // Registered user but profile not found yet, still in a loading state.
+            // Registered user but profile not found in Firestore.
+            // DO NOT redirect. Instead, we'll return the ProfileRecovery component below.
+            setIsRouting(false);
             return;
         }
 
@@ -86,6 +98,11 @@ export function DashboardLayoutClient({
                 <p className="text-muted-foreground animate-pulse font-medium">Synchronizing clinical session...</p>
             </div>
         );
+    }
+
+    // If user is logged in but profile is missing, show recovery flow
+    if (user && !user.isAnonymous && !userProfile) {
+        return <ProfileRecovery user={user} lang={lang} />;
     }
 
     return (

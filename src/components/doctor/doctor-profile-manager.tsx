@@ -23,23 +23,31 @@ export function DoctorProfileManager({ userId }: { userId: string }) {
     const { data: doctor, isLoading } = useDoc<Doctor>(doctorRef);
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleStatusChange = async (value: string) => {
+    const handleStatusChange = async (value: string, type: 'status' | 'specialization') => {
         if (!doctorRef) return;
         setIsSaving(true);
 
         try {
-            await updateDocumentNonBlocking(doctorRef, {
-                availabilityStatus: value as Doctor['availabilityStatus'],
-                locationType: (value === 'AvailableAtHospital' ? 'Hospital' : value === 'AvailableForHomeVisit' ? 'HomeVisit' : doctor?.locationType) as Doctor['locationType']
-            });
+            if (type === 'status') {
+                await updateDocumentNonBlocking(doctorRef, {
+                    availabilityStatus: value as Doctor['availabilityStatus'],
+                    locationType: (value === 'AvailableAtHospital' ? 'Hospital' : value === 'AvailableForHomeVisit' ? 'HomeVisit' : doctor?.locationType) as Doctor['locationType']
+                });
+            } else {
+                await updateDocumentNonBlocking(doctorRef, { specialization: value });
+                // Also update user profile
+                if (firestore && userId) {
+                    await updateDocumentNonBlocking(doc(firestore, 'users', userId), { specialization: value });
+                }
+            }
             toast({
-                title: 'Status Updated',
-                description: `Your status is now set to ${value.replace(/([A-Z])/g, ' $1').trim()}.`,
+                title: 'Profile Updated',
+                description: `${type === 'status' ? 'Status' : 'Specialization'} updated successfully.`,
             });
         } catch (error) {
             toast({
                 title: 'Error',
-                description: 'Failed to update status.',
+                description: 'Failed to update profile.',
                 variant: 'destructive',
             });
         } finally {
@@ -64,10 +72,28 @@ export function DoctorProfileManager({ userId }: { userId: string }) {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div>
-                    <Label className="text-sm font-semibold mb-4 block">Current Availability</Label>
+                    <Label className="text-sm font-semibold mb-4 block">Specialization</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {['Cardiology', 'Neurology', 'General Medicine', 'Emergency', 'Orthopedics'].map((spec) => (
+                            <Button
+                                key={spec}
+                                variant={doctor?.specialization === spec ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => handleStatusChange(spec, 'specialization')}
+                                disabled={isSaving}
+                                className="justify-start truncate"
+                            >
+                                {spec}
+                            </Button>
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <Label className="text-sm font-semibold mb-4 block">Current Availability Status</Label>
                     <RadioGroup
                         defaultValue={doctor?.availabilityStatus}
-                        onValueChange={handleStatusChange}
+                        onValueChange={(v) => handleStatusChange(v, 'status')}
                         disabled={isSaving}
                         className="grid gap-3"
                     >

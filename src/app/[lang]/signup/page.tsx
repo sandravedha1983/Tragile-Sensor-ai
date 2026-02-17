@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signOut } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useState, use } from 'react';
 import {
@@ -25,8 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { Locale } from '@/i18n-config';
+import { mapAuthError } from '@/lib/auth-errors';
 
 import { GoogleTranslator } from '@/components/google-translator';
 
@@ -57,6 +58,15 @@ export default function SignupPage({ params }: { params: Promise<{ lang: Locale 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      // Send email verification
+      // Send email verification
+      const actionCodeSettings = {
+        url: `${window.location.origin}/${lang}/login`,
+        handleCodeInApp: !!process.env.NEXT_PUBLIC_FIREBASE_HANDLE_CODE_IN_APP,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
+
       await updateProfile(user, { displayName: name });
 
       const userData = {
@@ -64,13 +74,14 @@ export default function SignupPage({ params }: { params: Promise<{ lang: Locale 
         email: user.email,
         name: name,
         role: role,
+        emailVerified: false, // Explicitly track verification status
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      // Create user document
+      // Create user document (BLOCKING write for consistency)
       const userDocRef = doc(firestore, 'users', user.uid);
-      await setDocumentNonBlocking(userDocRef, userData, { merge: false });
+      await setDoc(userDocRef, userData);
 
       // Create role document for role-based security rules
       let roleCollectionName = '';
@@ -83,13 +94,20 @@ export default function SignupPage({ params }: { params: Promise<{ lang: Locale 
         await setDocumentNonBlocking(roleDocRef, userData, { merge: false });
       }
 
-      toast({ title: 'Signup Successful', description: 'You have been logged in.' });
-      router.push(`/${lang}/dashboard`);
+      // Sign out the user immediately after signup to enforce verification on login
+      await signOut(auth);
+
+      toast({
+        title: 'Signup Successful',
+        description: 'Verification email sent! Please verify your email before logging in.'
+      });
+      router.push(`/${lang}/login`);
     } catch (error: any) {
+      console.error('Signup Error Detailed:', error);
       toast({
         variant: 'destructive',
         title: 'Signup Failed',
-        description: error.message,
+        description: mapAuthError(error),
       });
     } finally {
       setIsLoading(false);

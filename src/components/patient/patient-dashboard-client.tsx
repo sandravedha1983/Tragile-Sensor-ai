@@ -15,6 +15,7 @@ import { Progress } from '@/components/ui/progress';
 import { AiInsights } from '@/components/ai-insights';
 import { AppointmentBooking } from '@/components/patient/appointment-booking';
 import { VoiceAssistant } from '@/components/patient/voice-assistant';
+import { MedicalChatbot } from '@/components/patient/medical-chatbot';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { PatientIntakeForm } from '@/components/patient-intake-form';
@@ -240,6 +241,7 @@ export function PatientDashboardClient({ dict }: { dict: any }) {
                     </Card>
 
                     <AiInsights patient={latestTriage || null} />
+                    <MedicalChatbot patientUserId={user?.uid || ''} />
                     <PatientTriageHistory patientUserId={user?.uid || ''} />
                 </div>
             </div>

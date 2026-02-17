@@ -12,7 +12,13 @@ import { useUser } from '@/firebase';
 
 const navItems = (lang: Locale, dict: any, role?: string) => {
   const dashboardLabel = role ? `${role} Dashboard` : (dict.dashboard.staff?.title || 'Dashboard');
-  const dashboardHref = role === 'TriageStaff' ? `/${lang}/dashboard/staff` : `/${lang}/dashboard`;
+
+  let dashboardHref = `/${lang}/dashboard`;
+  if (role === 'TriageStaff') dashboardHref = `/${lang}/dashboard/staff`;
+  else if (role === 'Patient') dashboardHref = `/${lang}/dashboard/patient`;
+  else if (role === 'Doctor') dashboardHref = `/${lang}/dashboard/doctor`;
+  else if (role === 'Admin') dashboardHref = `/${lang}/dashboard/admin`;
+
   return [
     { href: dashboardHref, icon: Home, label: dashboardLabel },
     { href: `/${lang}/dashboard/analytics`, icon: LineChart, label: 'Analytics' },
